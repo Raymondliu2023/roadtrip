@@ -23,7 +23,7 @@ All 28 MVP tasks have been completed following Test-Driven Development and Speci
 cd frontend
 npm install
 
-# Run development server
+# Run development server with mock data (default)
 npm run dev
 # Opens at http://localhost:5173
 
@@ -35,6 +35,29 @@ npm run test:integration    # Integration tests (requires Playwright)
 npm run build
 npm run preview
 ```
+
+### Mock Data Mode
+
+The MVP includes realistic mock data for London and other EU cities, allowing you to **explore the full functionality without a backend API**.
+
+**Features of Mock Data:**
+- 25 realistic rental results with varied prices (€40-140)
+- 6 major providers (Enterprise, Hertz, Avis, Budget, Europcar, Sixt)
+- 10 different car models (Economy to Luxury)
+- Authentic London attractions (Windsor Castle, Oxford, Stonehenge, Bath, Canterbury, Cotswolds)
+- Multi-day itineraries with detailed route information
+- Simulated network delay (200-800ms) for realistic UX
+
+**Configuration:**
+```bash
+# Use mock data (default)
+VITE_USE_MOCK_DATA=true
+
+# Use real backend API
+VITE_USE_MOCK_DATA=false
+```
+
+The mock data service is located at [mockDataService.js](frontend/src/services/mockDataService.js).
 
 ---
 

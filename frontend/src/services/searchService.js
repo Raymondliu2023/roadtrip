@@ -2,6 +2,7 @@
 
 import { API_CONFIG, ERROR_MESSAGES } from '../utils/constants.js';
 import { formatDateTime } from '../utils/dateHelpers.js';
+import { mockSearch, isMockModeEnabled } from './mockDataService.js';
 
 /**
  * Perform car rental search with given parameters
@@ -13,6 +14,11 @@ import { formatDateTime } from '../utils/dateHelpers.js';
  * @throws {Error} If API call fails or returns error
  */
 export async function search(searchParams) {
+  // Use mock data in development mode or when explicitly enabled
+  if (isMockModeEnabled()) {
+    return await mockSearch(searchParams);
+  }
+
   const { city, pickupDateTime, dropoffDateTime } = searchParams;
 
   // Prepare request body according to API contract
