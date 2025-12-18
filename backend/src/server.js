@@ -3,6 +3,7 @@ import { registerCors } from './middleware/cors.js';
 import { registerErrorHandler } from './middleware/errorHandler.js';
 import { healthRoutes } from './routes/health.js';
 import { metricsRoutes } from './routes/metrics.js';
+import { searchRoutes } from './routes/search.js';
 import { testConnection as testPostgres, closePool as closePostgres } from './db/postgres.js';
 import {
   connect as connectRedis,
@@ -23,11 +24,10 @@ async function start() {
     // Register error handler
     registerErrorHandler(app);
 
-    // Register health check route
+    // Register routes
     await app.register(healthRoutes);
-
-    // Register metrics route
     await app.register(metricsRoutes);
+    await app.register(searchRoutes);
 
     // Test database connections
     app.log.info('Testing database connections...');
