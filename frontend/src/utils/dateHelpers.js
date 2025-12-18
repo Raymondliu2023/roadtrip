@@ -3,24 +3,27 @@
 import { DEFAULT_TIMES } from './constants.js';
 
 /**
- * Get current date with time set to default pickup time (10:00 AM)
- * @returns {Date} Current date with 10:00 AM time
+ * Get tomorrow's date with time set to default pickup time (10:00 AM)
+ * Changed from today to tomorrow to avoid "pickup date in the past" validation errors
+ * @returns {Date} Tomorrow's date with 10:00 AM time
  */
 export function getCurrentDate() {
-  const now = new Date();
-  now.setHours(DEFAULT_TIMES.PICKUP_HOUR, DEFAULT_TIMES.PICKUP_MINUTE, 0, 0);
-  return now;
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(DEFAULT_TIMES.PICKUP_HOUR, DEFAULT_TIMES.PICKUP_MINUTE, 0, 0);
+  return tomorrow;
 }
 
 /**
- * Get tomorrow's date with time set to default dropoff time (10:00 AM)
- * @returns {Date} Tomorrow's date with 10:00 AM time
+ * Get day after tomorrow's date with time set to default dropoff time (10:00 AM)
+ * Returns 2 days from now to ensure dropoff is after pickup (pickup is tomorrow)
+ * @returns {Date} Day after tomorrow's date with 10:00 AM time
  */
 export function getTomorrowDate() {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(DEFAULT_TIMES.DROPOFF_HOUR, DEFAULT_TIMES.DROPOFF_MINUTE, 0, 0);
-  return tomorrow;
+  const dayAfterTomorrow = new Date();
+  dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+  dayAfterTomorrow.setHours(DEFAULT_TIMES.DROPOFF_HOUR, DEFAULT_TIMES.DROPOFF_MINUTE, 0, 0);
+  return dayAfterTomorrow;
 }
 
 /**

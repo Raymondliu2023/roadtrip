@@ -17,7 +17,7 @@ A user visiting the homepage for the first time wants to search for available ca
 
 **Acceptance Scenarios**:
 
-1. **Given** a user loads the homepage for the first time, **When** the page loads, **Then** a search form displays with default values (London or user's detected city, today at 10:00 AM pick-up, tomorrow at 10:00 AM drop-off)
+1. **Given** a user loads the homepage for the first time, **When** the page loads, **Then** a search form displays with default values (London or user's detected city, tomorrow at 10:00 AM pick-up, day after tomorrow at 10:00 AM drop-off)
 2. **Given** a user sees the search form, **When** they select a different city from the dropdown, **Then** the city field updates to their selection
 3. **Given** a user modifies the pick-up date and time, **When** they select a new date/time, **Then** the form reflects their chosen values
 4. **Given** a user has configured their search parameters, **When** they click the search button, **Then** loading indicators appear and results display below the search form
@@ -76,7 +76,7 @@ A user accessing the website wants the system to intelligently default to their 
 ### Functional Requirements
 
 - **FR-001**: System MUST display a search form on the homepage containing fields for city selection, pick-up date/time, and drop-off date/time
-- **FR-002**: System MUST populate the search form with default values: selected city (London or user's detected EU city), pick-up time of 10:00 AM today, drop-off time of 10:00 AM the following day
+- **FR-002**: System MUST populate the search form with default values: selected city (London or user's detected EU city), pick-up time of 10:00 AM tomorrow, drop-off time of 10:00 AM the day after tomorrow
 - **FR-003**: System MUST provide a dropdown or autocomplete field listing all major EU cities for city selection
 - **FR-004**: System MUST validate that drop-off date/time occurs after pick-up date/time before allowing search submission
 - **FR-005**: System MUST prevent users from selecting dates/times in the past

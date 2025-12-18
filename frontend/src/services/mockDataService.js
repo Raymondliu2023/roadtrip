@@ -198,8 +198,18 @@ export async function mockSearch(searchParams) {
  * @returns {boolean} True if mock mode is enabled
  */
 export function isMockModeEnabled() {
+  // Disable mock mode in test environment to allow contract tests to run
+  if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') {
+    return false;
+  }
+
   // Enable mock mode if:
   // 1. Environment variable VITE_USE_MOCK_DATA is set to 'true'
   // 2. Or running in development mode (default)
-  return import.meta.env.VITE_USE_MOCK_DATA !== 'false';
+  try {
+    return import.meta.env?.VITE_USE_MOCK_DATA !== 'false';
+  } catch (e) {
+    // Fallback to true for non-Vite environments
+    return true;
+  }
 }
