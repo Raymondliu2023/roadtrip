@@ -1,0 +1,490 @@
+openapi: 3.0.3
+info:
+  title: Car Rental & Self-Drive Tour Search API
+  description: |
+    Backend API for searching car rentals in major EU cities with integrated driving route recommendations.
+
+    This contract defines the interface between the frontend (specified in 001-rental-search-homepage)
+    and the backend service responsible for aggregating rental quotes and route data.
+  version: 1.0.0
+  contact:
+    name: Roadtrip Development Team
+
+servers:
+  - url: https://api.roadtrip.example.com/v1
+    description: Production API server
+  - url: https://staging-api.roadtrip.example.com/v1
+    description: Staging API server
+  - url: http://localhost:3000/v1
+    description: Local development server
+
+paths:
+  /search:
+    post:
+      summary: Search for car rentals with route recommendations
+      description: |
+        Accepts search parameters (city, pickup/dropoff times) and returns available
+        car rental options with associated driving route information and attractions.
+
+        This endpoint aggregates data from multiple car rental providers and combines
+        it with route/attraction information for the specified EU city.
+      operationId: searchRentals
+      tags:
+        - Search
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchQuery'
+            examples:
+              londonSearch:
+                summary: Search for rentals in London
+                value:
+                  city: "London"
+                  pickupDateTime: "2025-12-20T10:00:00Z"
+                  dropoffDateTime: "2025-12-21T10:00:00Z"
+              parisWeekend:
+                summary: Weekend rental in Paris
+                value:
+                  city: "Paris"
+                  pickupDateTime: "2025-12-28T09:00:00Z"
+                  dropoffDateTime: "2025-12-30T18:00:00Z"
+      responses:
+        '200':
+          description: Successful search - returns rental results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+              examples:
+                multipleResults:
+                  summary: Typical search with multiple results
+                  value:
+                    results:
+                      - id: "rental-001"
+                        provider: "Enterprise"
+                        price:
+                          amount: 45.99
+                          currency: "EUR"
+                        carModel:
+                          name: "Toyota Corolla"
+                          category: "Economy"
+                          imageUrl: "https://cdn.example.com/cars/toyota-corolla.jpg"
+                          passengers: 5
+                          transmission: "manual"
+                        availability: true
+                        routeInfo:
+                          thumbnailUrl: "https://cdn.example.com/routes/london-route-1.jpg"
+                          estimatedDuration:
+                            hours: 2
+                            minutes: 30
+                          totalDistance:
+                            value: 150
+                            unit: "km"
+                          attractions:
+                            - id: "attr-001"
+                              name: "Windsor Castle"
+                              description: "Historic royal residence"
+                              location:
+                                city: "Windsor"
+                                coordinates:
+                                  lat: 51.4834
+                                  lon: -0.6044
+                              category: "Historical"
+                              thumbnailUrl: "https://cdn.example.com/attractions/windsor.jpg"
+                              estimatedVisitTime:
+                                hours: 2
+                                minutes: 30
+                          itinerary:
+                            - day: 1
+                              stops: ["London", "Windsor Castle", "Oxford"]
+                              description: "Depart London, visit Windsor Castle, arrive Oxford"
+                          recommendations: "**Best Time**: Spring/Fall. **Highlights**: Windsor Castle 2-3 hours."
+                    totalResults: 47
+                    timestamp: "2025-12-18T14:30:00Z"
+                emptyResults:
+                  summary: No results found
+                  value:
+                    results: []
+                    totalResults: 0
+                    timestamp: "2025-12-18T14:30:00Z"
+        '400':
+          description: Invalid request - validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidDateRange:
+                  summary: Drop-off before pick-up
+                  value:
+                    error:
+                      code: "INVALID_DATE_RANGE"
+                      message: "Drop-off date/time must be after pick-up date/time"
+                      field: "dropoffDateTime"
+                pastDate:
+                  summary: Pick-up date in the past
+                  value:
+                    error:
+                      code: "PAST_DATETIME"
+                      message: "Pick-up date/time cannot be in the past"
+                      field: "pickupDateTime"
+                invalidCity:
+                  summary: Unsupported city
+                  value:
+                    error:
+                      code: "INVALID_CITY"
+                      message: "City 'Atlantis' is not a supported EU city"
+                      field: "city"
+        '429':
+          description: Too many requests - rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "RATE_LIMIT_EXCEEDED"
+                  message: "Too many search requests. Please try again in 60 seconds."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "INTERNAL_ERROR"
+                  message: "An unexpected error occurred while processing your search"
+        '503':
+          description: Service unavailable - backend services down
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: "SERVICE_UNAVAILABLE"
+                  message: "Car rental providers are temporarily unavailable. Please try again later."
+
+components:
+  schemas:
+    SearchQuery:
+      type: object
+      required:
+        - city
+        - pickupDateTime
+        - dropoffDateTime
+      properties:
+        city:
+          type: string
+          description: EU city name (must match supported cities list)
+          example: "London"
+        pickupDateTime:
+          type: string
+          format: date-time
+          description: Pick-up date and time in ISO 8601 format (UTC)
+          example: "2025-12-20T10:00:00Z"
+        dropoffDateTime:
+          type: string
+          format: date-time
+          description: Drop-off date and time in ISO 8601 format (UTC)
+          example: "2025-12-21T10:00:00Z"
+
+    SearchResponse:
+      type: object
+      required:
+        - results
+        - totalResults
+        - timestamp
+      properties:
+        results:
+          type: array
+          description: Array of rental results with route information
+          items:
+            $ref: '#/components/schemas/RentalResult'
+        totalResults:
+          type: integer
+          description: Total number of results (for pagination)
+          example: 47
+        timestamp:
+          type: string
+          format: date-time
+          description: Server timestamp when search was executed
+          example: "2025-12-18T14:30:00Z"
+
+    RentalResult:
+      type: object
+      required:
+        - id
+        - provider
+        - price
+        - carModel
+        - availability
+        - routeInfo
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this rental result
+          example: "rental-12345"
+        provider:
+          type: string
+          description: Rental company name
+          example: "Enterprise"
+        price:
+          $ref: '#/components/schemas/Price'
+        carModel:
+          $ref: '#/components/schemas/CarModel'
+        availability:
+          type: boolean
+          description: Whether this rental is currently available
+          example: true
+        routeInfo:
+          $ref: '#/components/schemas/RouteInformation'
+
+    Price:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: number
+          format: float
+          description: Price amount (non-negative)
+          example: 45.99
+        currency:
+          type: string
+          description: Currency code (ISO 4217)
+          example: "EUR"
+
+    CarModel:
+      type: object
+      required:
+        - name
+        - category
+        - imageUrl
+        - passengers
+        - transmission
+      properties:
+        name:
+          type: string
+          description: Car model name
+          example: "Toyota Corolla"
+        category:
+          type: string
+          description: Vehicle category
+          enum: ["Economy", "Compact", "Mid-Size", "Full-Size", "SUV", "Luxury", "Van"]
+          example: "Economy"
+        imageUrl:
+          type: string
+          format: uri
+          description: URL to car model image (empty string if unavailable)
+          example: "https://cdn.example.com/cars/toyota-corolla.jpg"
+        passengers:
+          type: integer
+          minimum: 1
+          description: Passenger capacity
+          example: 5
+        transmission:
+          type: string
+          enum: ["manual", "automatic"]
+          description: Transmission type
+          example: "manual"
+
+    RouteInformation:
+      type: object
+      required:
+        - thumbnailUrl
+        - estimatedDuration
+        - totalDistance
+        - attractions
+        - itinerary
+        - recommendations
+      properties:
+        thumbnailUrl:
+          type: string
+          format: uri
+          description: URL to route preview thumbnail (empty string if unavailable)
+          example: "https://cdn.example.com/routes/london-oxford-route.jpg"
+        estimatedDuration:
+          $ref: '#/components/schemas/Duration'
+        totalDistance:
+          $ref: '#/components/schemas/Distance'
+        attractions:
+          type: array
+          minItems: 1
+          description: Points of interest along the route
+          items:
+            $ref: '#/components/schemas/Attraction'
+        itinerary:
+          type: array
+          minItems: 1
+          description: Day-by-day route itinerary
+          items:
+            $ref: '#/components/schemas/ItineraryDay'
+        recommendations:
+          type: string
+          description: Self-drive tour recommendations (markdown formatted)
+          example: "**Best Time**: Spring/Fall for mild weather. **Highlights**: Stop at Windsor for 2-3 hours."
+
+    Duration:
+      type: object
+      required:
+        - hours
+        - minutes
+      properties:
+        hours:
+          type: integer
+          minimum: 0
+          description: Hours component of duration
+          example: 2
+        minutes:
+          type: integer
+          minimum: 0
+          maximum: 59
+          description: Minutes component of duration
+          example: 30
+
+    Distance:
+      type: object
+      required:
+        - value
+        - unit
+      properties:
+        value:
+          type: number
+          format: float
+          minimum: 0
+          description: Distance value
+          example: 150
+        unit:
+          type: string
+          enum: ["km", "miles"]
+          description: Distance unit
+          example: "km"
+
+    Attraction:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - location
+        - category
+        - thumbnailUrl
+        - estimatedVisitTime
+      properties:
+        id:
+          type: string
+          description: Unique attraction identifier
+          example: "attraction-789"
+        name:
+          type: string
+          description: Attraction name
+          example: "Windsor Castle"
+        description:
+          type: string
+          description: Brief description of the attraction
+          example: "Historic royal residence and fortress, over 900 years old"
+        location:
+          $ref: '#/components/schemas/Location'
+        category:
+          type: string
+          enum: ["Historical", "Nature", "Cultural", "Food", "Entertainment", "Shopping"]
+          description: Attraction type
+          example: "Historical"
+        thumbnailUrl:
+          type: string
+          format: uri
+          description: URL to attraction thumbnail (empty string if unavailable)
+          example: "https://cdn.example.com/attractions/windsor-castle.jpg"
+        estimatedVisitTime:
+          $ref: '#/components/schemas/Duration'
+
+    Location:
+      type: object
+      required:
+        - city
+        - coordinates
+      properties:
+        city:
+          type: string
+          description: City name
+          example: "Windsor"
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+
+    Coordinates:
+      type: object
+      required:
+        - lat
+        - lon
+      properties:
+        lat:
+          type: number
+          format: float
+          minimum: -90
+          maximum: 90
+          description: Latitude (WGS84)
+          example: 51.4834
+        lon:
+          type: number
+          format: float
+          minimum: -180
+          maximum: 180
+          description: Longitude (WGS84)
+          example: -0.6044
+
+    ItineraryDay:
+      type: object
+      required:
+        - day
+        - stops
+        - description
+      properties:
+        day:
+          type: integer
+          minimum: 1
+          description: Day number (1-indexed)
+          example: 1
+        stops:
+          type: array
+          minItems: 1
+          description: Ordered list of location names for this day
+          items:
+            type: string
+          example: ["London", "Windsor Castle", "Oxford"]
+        description:
+          type: string
+          description: Daily route description
+          example: "Depart London, visit historic Windsor Castle, arrive in Oxford for evening"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code
+              example: "INVALID_DATE_RANGE"
+            message:
+              type: string
+              description: Human-readable error message
+              example: "Drop-off date/time must be after pick-up date/time"
+            field:
+              type: string
+              description: Field name that caused the error (for validation errors)
+              example: "dropoffDateTime"
+
+tags:
+  - name: Search
+    description: Car rental search operations

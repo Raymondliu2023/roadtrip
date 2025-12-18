@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Search car rentals in major EU cities with integrated self-drive tour recommendations">
+    <title>Car Rental & Self-Drive Tours - EU Cities</title>
+    <link rel="stylesheet" href="./styles/variables.css">
+    <link rel="stylesheet" href="./styles/main.css">
+    <link rel="stylesheet" href="./styles/components/SearchForm.css">
+    <link rel="stylesheet" href="./styles/components/ResultCard.css">
+    <link rel="stylesheet" href="./styles/components/ResultsList.css">
+    <link rel="stylesheet" href="./styles/components/Pagination.css">
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <h1 class="header__title">Car Rental & Self-Drive Tours</h1>
+            <p class="header__subtitle">Explore Europe at your own pace</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Search form will be injected here by JavaScript -->
+            <section id="search-section" class="search-section"></section>
+
+            <!-- Results will be injected here by JavaScript -->
+            <section id="results-section" class="results-section"></section>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2025 Roadtrip. Discover the best of Europe.</p>
+        </footer>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+</body>
+</html>
