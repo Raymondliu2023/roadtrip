@@ -31,7 +31,7 @@ export const PAGINATION = {
 
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: '/api/v1',
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/v1',
   ENDPOINTS: {
     SEARCH: '/search'
   },
