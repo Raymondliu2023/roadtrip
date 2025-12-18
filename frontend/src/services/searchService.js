@@ -14,20 +14,10 @@ import { mockSearch, isMockModeEnabled } from './mockDataService.js';
  * @throws {Error} If API call fails or returns error
  */
 export async function search(searchParams) {
-  // Debug: Log environment variables and mock mode status
-  console.log('[SearchService Debug]');
-  console.log('  VITE_USE_MOCK_DATA:', import.meta.env.VITE_USE_MOCK_DATA);
-  console.log('  VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
-  console.log('  isMockModeEnabled():', isMockModeEnabled());
-  console.log('  API_CONFIG.BASE_URL:', API_CONFIG.BASE_URL);
-
   // Use mock data in development mode or when explicitly enabled
   if (isMockModeEnabled()) {
-    console.log('  → Using MOCK data');
     return await mockSearch(searchParams);
   }
-
-  console.log('  → Using REAL backend API');
 
   const { city, pickupDateTime, dropoffDateTime } = searchParams;
 
